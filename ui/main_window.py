@@ -115,7 +115,9 @@ class MainWindow(QMainWindow):
 
         bottom = QHBoxLayout()
 
-        self.version = QLabel("v1.0.0 BartizeR")
+        VERSION = "1.0.0"
+
+        self.version = QLabel(f"MediaExport v{VERSION}")
         self.status = QLabel("Ready")
 
         self.progress = QProgressBar()
