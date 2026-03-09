@@ -73,7 +73,7 @@ jobs:
       - name: Rename installer
         shell: pwsh
         run: |
-          $name = "v${{ env.VERSION }}-${{ env.STAGE }} b${{ env.BUILD }}.exe"
+          $name = "v${{ env.VERSION }} b${{ env.BUILD }}.exe"
           
           if ($env:STAGE -eq "release") {
             $name = "v${{ env.VERSION }} b${{ env.BUILD }}.exe"
@@ -83,12 +83,14 @@ jobs:
 
       # -------- CREATE RELEASE --------
 
+      - name: List installer files
+        run: dir installer
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "v${{ env.VERSION }}-${{ env.STAGE }} b${{ env.BUILD }}"
+          name: "v${{ env.VERSION }} b${{ env.BUILD }}"
           tag_name: ${{ github.ref_name }}
-          files: |
-            installer/MediaExport*.exe
+          files: installer/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
