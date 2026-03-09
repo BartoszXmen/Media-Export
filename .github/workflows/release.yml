@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -13,6 +14,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -26,17 +28,61 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      # -------- VERSIONING --------
+
+      - name: Extract version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart("v")
+          $build = "{0:D4}" -f ${{ github.run_number }}
+
+          if ($version -match "alpha") { $stage = "alpha" }
+          elseif ($version -match "beta") { $stage = "beta" }
+          elseif ($version -match "dev") { $stage = "dev" }
+          else { $stage = "release" }
+
+          $full = "v$version b$build $stage"
+
+          echo "VERSION=$version" >> $env:GITHUB_ENV
+          echo "BUILD=$build" >> $env:GITHUB_ENV
+          echo "STAGE=$stage" >> $env:GITHUB_ENV
+          echo "FULL_VERSION=$full" >> $env:GITHUB_ENV
+
+      # -------- BUILD EXE --------
+
       - name: Build EXE
         run: |
           pyinstaller main.py --noconsole --name MediaExport --icon assets/icon.ico
 
-      - name: Create zip
+      # -------- INSTALL INNO SETUP --------
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      # -------- BUILD INSTALLER --------
+
+      - name: Build installer
+        shell: pwsh
         run: |
-          Compress-Archive -Path dist/MediaExport/* -DestinationPath MediaExport.zip
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      # -------- RENAME INSTALLER --------
+
+      - name: Rename installer
+        shell: pwsh
+        run: |
+          Rename-Item installer/MediaExportSetup.exe "MediaExport $env:FULL_VERSION.exe"
+
+      # -------- CREATE RELEASE --------
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: MediaExport.zip
+          name: MediaExport ${{ env.FULL_VERSION }}
+          tag_name: ${{ github.ref_name }}
+          files: |
+            installer/MediaExport*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
