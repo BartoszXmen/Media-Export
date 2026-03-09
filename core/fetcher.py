@@ -1,13 +1,10 @@
 import subprocess
 import json
-import re
-from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from PySide6.QtCore import QObject, Signal
+from utils.paths import resource_path
 
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-BIN_DIR = BASE_DIR / "bin"
+CREATE_NO_WINDOW = 0x08000000
 
 
 class FetchWorker(QObject):
@@ -23,7 +20,6 @@ class FetchWorker(QObject):
 
     def clean_url(self, url):
 
-        # youtube watch link
         if "youtube.com/watch" in url:
 
             parsed = urlparse(url)
@@ -42,23 +38,24 @@ class FetchWorker(QObject):
 
         try:
 
-            yt = str(BIN_DIR / "yt-dlp.exe")
-
-            # FAST FETCH
+            yt = resource_path("bin/yt-dlp.exe")
 
             cmd = [
                 yt,
-                "--dump-json",
+                "--dump-single-json",
                 "--no-playlist",
                 "--no-warnings",
                 "--skip-download",
+                "--no-call-home",
+                "--no-check-certificates",
                 self.url
             ]
 
             result = subprocess.run(
                 cmd,
                 capture_output=True,
-                text=True
+                text=True,
+                creationflags=CREATE_NO_WINDOW
             )
 
             if result.returncode != 0:
@@ -66,45 +63,20 @@ class FetchWorker(QObject):
 
             data = json.loads(result.stdout)
 
-            # ---------------- AVATAR
+            # avatar kanału
+            avatar = None
 
-            avatar = data.get("channel_thumbnail")
+            if data.get("channel_thumbnail"):
+                avatar = data["channel_thumbnail"]
 
-            if not avatar:
-
-                uploader_url = data.get("uploader_url")
-
-                if uploader_url:
-
-                    cmd_channel = [
-                        yt,
-                        "--dump-single-json",
-                        "--skip-download",
-                        "--playlist-items",
-                        "0",
-                        uploader_url
-                    ]
-
-                    ch = subprocess.run(
-                        cmd_channel,
-                        capture_output=True,
-                        text=True
-                    )
-
-                    if ch.returncode == 0:
-
-                        ch_data = json.loads(ch.stdout)
-
-                        thumbs = ch_data.get("thumbnails")
-
-                        if thumbs:
-                            avatar = thumbs[-1].get("url")
-
-            # ---------------- RESULT
+            else:
+                thumbs = data.get("thumbnails")
+                if thumbs:
+                    avatar = thumbs[-1].get("url")
 
             info = {
 
-                "title": data["title"],
+                "title": data.get("title", ""),
 
                 "author": data.get("uploader", ""),
 

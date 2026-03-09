@@ -1,11 +1,7 @@
 import subprocess
 from pathlib import Path
 from PySide6.QtCore import QObject, Signal
-
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-BIN_DIR = BASE_DIR / "bin"
-
+from utils.paths import resource_path
 
 class DownloadWorker(QObject):
 
@@ -25,10 +21,9 @@ class DownloadWorker(QObject):
     def run(self):
 
         try:
+            yt = resource_path("bin/yt-dlp.exe")
 
-            yt = str(BIN_DIR / "yt-dlp.exe")
-
-            output = f"{self.folder}/%(title)s.%(ext)s"
+            output = str(Path(self.folder) / "%(title)s.%(ext)s")
 
             if self.fmt == "MP4":
 
@@ -44,6 +39,7 @@ class DownloadWorker(QObject):
 
                 cmd = [
                     yt,
+                    "--no-playlist",
                     "-f",
                     format_string,
                     "--merge-output-format",
@@ -57,6 +53,7 @@ class DownloadWorker(QObject):
 
                 cmd = [
                     yt,
+                    "--no-playlist",
                     "-f",
                     "bestaudio",
                     "--extract-audio",
@@ -71,6 +68,7 @@ class DownloadWorker(QObject):
 
                 cmd = [
                     yt,
+                    "--no-playlist",
                     "-f",
                     "bestaudio",
                     "--extract-audio",
@@ -87,7 +85,8 @@ class DownloadWorker(QObject):
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                text=True
+                text=True,
+                creationflags=subprocess.CREATE_NO_WINDOW
             )
 
             for line in process.stdout:

@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
 from PySide6.QtGui import *
+from utils.paths import resource_path
 
 
 class CenterPanel(QWidget):
@@ -125,7 +126,7 @@ class CenterPanel(QWidget):
 
         self.spinner = QLabel()
 
-        pix = QPixmap("assets/loading_circle.png")
+        pix = QPixmap(resource_path("assets/loading_circle.png"))
 
         pix = pix.scaled(
             int(pix.width() * 0.35),

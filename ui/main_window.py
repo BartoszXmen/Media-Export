@@ -21,7 +21,9 @@ from ui.workers.image_loader import ImageLoader
 from ui.services.folder_manager import FolderManager
 
 
-CACHE = "cache/thumbs"
+CACHE = os.path.join(os.getcwd(), "cache", "thumbs")
+
+os.makedirs(CACHE, exist_ok=True)
 
 
 class MainWindow(QMainWindow):
@@ -31,6 +33,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.threadpool = QThreadPool.globalInstance()
+        self.threadpool.setMaxThreadCount(8)
 
         self.setWindowTitle("Media Export")
         self.resize(850, 400)
@@ -212,7 +215,7 @@ class MainWindow(QMainWindow):
 
         if self.fetch_thread:
             self.fetch_thread.quit()
-            self.fetch_thread.wait()
+            self.fetch_thread.deleteLater()
             self.fetch_thread = None
 
         self.reset_ui()
@@ -244,7 +247,7 @@ class MainWindow(QMainWindow):
 
         if self.fetch_thread:
             self.fetch_thread.quit()
-            self.fetch_thread.wait()
+            self.fetch_thread.deleteLater()
             self.fetch_thread = None
 
     def fetch_error(self, msg):

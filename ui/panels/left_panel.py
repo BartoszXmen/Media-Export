@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import *
 from PySide6.QtGui import *
 from PySide6.QtCore import *
+from utils.paths import resource_path
 
 
 class LeftPanel(QWidget):
@@ -70,7 +71,7 @@ class LeftPanel(QWidget):
 
         change_btn = QPushButton()
         change_btn.setObjectName("folderBtn")
-        change_btn.setIcon(QIcon("assets/change_folder.png"))
+        change_btn.setIcon(QIcon(resource_path("assets/change_folder.png")))
         change_btn.setFixedSize(56, 28)
 
         change_btn.clicked.connect(self.change_folder_clicked.emit)
@@ -90,7 +91,7 @@ class LeftPanel(QWidget):
 
         open_btn = QPushButton()
         open_btn.setObjectName("folderBtn")
-        open_btn.setIcon(QIcon("assets/open_folder.png"))
+        open_btn.setIcon(QIcon(resource_path("assets/open_folder.png")))
         open_btn.setFixedSize(56, 28)
 
         open_btn.clicked.connect(self.open_folder_clicked.emit)
