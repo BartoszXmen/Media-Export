@@ -56,6 +56,9 @@ jobs:
         run: |
           pyinstaller main.py --noconsole --name MediaExport --icon assets/icon.ico
 
+      - name: Show build output
+        run: dir dist
+
       # -------- INSTALL INNO SETUP --------
 
       - name: Install Inno Setup
@@ -73,23 +76,30 @@ jobs:
       - name: Rename installer
         shell: pwsh
         run: |
-          $name = "v${{ env.VERSION }} b${{ env.BUILD }}.exe"
-          
-          if ($env:STAGE -eq "release") {
-            $name = "v${{ env.VERSION }} b${{ env.BUILD }}.exe"
+          $version = "${{ env.VERSION }}"
+          $build = "${{ env.BUILD }}"
+          $stage = "${{ env.STAGE }}"
+
+          if ($stage -eq "release") {
+            $name = "MediaExport v$version b$build.exe"
           }
-          
+          else {
+            $name = "MediaExport v$version-$stage b$build.exe"
+          }
+
           Rename-Item installer/MediaExportSetup.exe $name
 
-      # -------- CREATE RELEASE --------
+      # -------- DEBUG --------
 
       - name: List installer files
         run: dir installer
 
+      # -------- CREATE RELEASE --------
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "v${{ env.VERSION }} b${{ env.BUILD }}"
+          name: "MediaExport v${{ env.VERSION }} b${{ env.BUILD }}"
           tag_name: ${{ github.ref_name }}
           files: installer/*.exe
         env:
