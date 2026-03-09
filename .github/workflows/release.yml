@@ -73,7 +73,13 @@ jobs:
       - name: Rename installer
         shell: pwsh
         run: |
-          Rename-Item installer/MediaExportSetup.exe "MediaExport $env:FULL_VERSION.exe"
+          $name = "v${{ env.VERSION }}-${{ env.STAGE }} b${{ env.BUILD }}.exe"
+          
+          if ($env:STAGE -eq "release") {
+            $name = "v${{ env.VERSION }} b${{ env.BUILD }}.exe"
+          }
+          
+          Rename-Item installer/MediaExportSetup.exe $name
 
       # -------- CREATE RELEASE --------
 

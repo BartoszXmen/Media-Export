@@ -10,7 +10,7 @@ SolidCompression=yes
 WizardStyle=modern
 
 [Files]
-Source: "dist\MediaExport\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "dist\MediaExport\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\Media Export"; Filename: "{app}\MediaExport.exe"
